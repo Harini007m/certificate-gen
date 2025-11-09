@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="preview-section">
+  <div class="card preview-header-card">
+    <div class="badge">
+      <i class="fas fa-certificate"></i>
+      <span>Preview & Download</span>
+    </div>
+    <h2 class="card-title">Generated Certificates</h2>
+    <p class="text-muted">
+      Your certificates have been generated successfully. Review them below and download individually or as a complete PDF package.
+    </p>
+  </div>
+
+  {% if items %}
+  <div class="preview-actions-top card">
+    <div class="preview-stats">
+      <div class="stat-item">
+        <i class="fas fa-certificate"></i>
+        <div>
+          <span class="stat-value">{{ items|length }}</span>
+          <span class="stat-label">Certificates</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-clock"></i>
+        <div>
+          <span class="stat-value">Just Now</span>
+          <span class="stat-label">Generated</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <a href="{{ pdf_url }}" class="btn btn-outline btn-icon" download title="Download PDF">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a href="{{ url_for('index') }}" class="btn btn-outline btn-icon" title="New Batch">
+        <i class="fas fa-plus"></i>
+      </a>
+      <button class="btn btn-primary" onclick="downloadAll()">
+        <i class="fas fa-download"></i>
+        <span>Download All</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="preview-grid">
+    {% for item in items %}
+    <div class="preview-card">
+      <div class="preview-image">
+        <img src="{{ item.file_url }}" alt="Certificate for {{ item.name }}" loading="lazy">
+        <div class="preview-overlay">
+          <div class="preview-overlay-actions">
+            <a href="{{ item.file_url }}" class="btn btn-outline btn-icon" target="_blank" title="View Full Size">
+              <i class="fas fa-expand"></i>
+            </a>
+            <a href="{{ item.file_url }}" class="btn btn-outline btn-icon" download title="Download">
+              <i class="fas fa-download"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="preview-info">
+        <div class="preview-header">
+          <div class="preview-title">
+            <h3>{{ item.name }}</h3>
+            <span class="preview-badge">#{{ "%03d" | format(loop.index) }}</span>
+          </div>
+          <div class="preview-actions">
+            <button class="btn btn-icon preview-zoom" onclick="openImageModal('{{ item.file_url }}', '{{ item.name }}')">
+              <i class="fas fa-search-plus"></i>
+            </button>
+            <a href="{{ item.file_url }}" class="btn btn-primary btn-sm" download>
+              <i class="fas fa-download"></i>
+              <span>Save</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="preview-actions-bottom card">
+    <div class="left">
+      <a href="{{ url_for('index') }}" class="btn btn-outline">
+        <i class="fas fa-plus"></i>
+        <span>Generate More</span>
+      </a>
+    </div>
+    <div class="right">
+      <a href="{{ pdf_url }}" class="btn btn-primary" download>
+        <i class="fas fa-file-pdf"></i>
+        <span>Download All (PDF)</span>
+      </a>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state card">
+    <div class="empty-icon">
+      <i class="fas fa-folder-open"></i>
+    </div>
+    <h3>No Certificates Found</h3>
+    <p>This batch appears to be empty. Try generating new certificates.</p>
+    <div class="empty-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        <span>Generate New Batch</span>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Image Preview Modal -->
+  <div id="imageModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle"></h3>
+        <button class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modalImage" src="" alt="Certificate Preview">
+      </div>
+      <div class="modal-footer">
+        <a id="modalDownload" href="#" class="btn btn-primary" download>
+          <i class="fas fa-download"></i>
+          <span>Download</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% block scripts %}
+<script>
+// Image preview modal
+function openImageModal(imageUrl, name) {
+  const modal = document.getElementById('imageModal');
+  const modalImage = document.getElementById('modalImage');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDownload = document.getElementById('modalDownload');
+  
+  modalImage.src = imageUrl;
+  modalTitle.textContent = name;
+  modalDownload.href = imageUrl;
+  modal.style.display = 'flex';
+
+  // Close modal functionality
+  modal.onclick = e => {
+    if (e.target === modal) modal.style.display = 'none';
+  };
+  modal.querySelector('.modal-close').onclick = () => modal.style.display = 'none';
+}
+
+// Download all certificates
+async function downloadAll() {
+  const links = Array.from(document.querySelectorAll('.preview-card .preview-actions a[download]'));
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  
+  for (let i = 0; i < links.length; i++) {
+    const link = links[i];
+    link.click();
+    await delay(500); // Add a small delay between downloads to prevent browser throttling
+  }
+}
+
+// Preview image lazy loading
+document.addEventListener('DOMContentLoaded', () => {
+  const previewImages = document.querySelectorAll('.preview-image img[loading="lazy"]');
+  const imageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+        observer.unobserve(img);
+      }
+    });
+  });
+
+  previewImages.forEach(img => imageObserver.observe(img));
+});
+
+// Add hover effects to preview cards
+document.querySelectorAll('.preview-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.transform = 'translateY(-8px)';
+    card.style.boxShadow = 'var(--shadow-lg)';
+  });
+  
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.boxShadow = '';
+  });
+});
+</script>
+{% endblock %}{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <div class="card-header">
+    <div class="badge">
+      <i class="fas fa-upload"></i>
+      <span>Upload Files</span>
+    </div>
+    <h2 class="card-title">Generate Certificates</h2>
+    <p class="text-muted">
+      Upload your certificate template and student list to generate personalized certificates for each student.
+      Fill out both required files below to get started.
+    </p>
+  </div>
+
+  <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="form-grid">
+    <div class="form-card">
+      <label class="label">
+        <i class="fas fa-certificate"></i>
+        <span>Certificate Template</span>
+        <span class="help-text">Supported formats: PNG, JPG, JPEG, DOCX, DOC</span>
+      </label>
+      <div class="file-input-wrapper">
+        <input type="file" name="template" accept=".png,.jpg,.jpeg,.docx,.doc" required
+               class="file-input" id="templateInput">
+        <div class="file-placeholder">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <div>Drop your template here</div>
+          <small>or click to browse files</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <label class="label">
+        <i class="fas fa-table"></i>
+        <span>Student List</span>
+        <span class="help-text">Supported formats: XLSX, XLS, CSV</span>
+      </label>
+      <div class="file-input-wrapper">
+        <input type="file" name="listfile" accept=".xlsx,.xls,.csv" required
+               class="file-input" id="listInput">
+        <div class="file-placeholder">
+          <i class="fas fa-file-excel"></i>
+          <div>Drop your student list here</div>
+          <small>or click to browse files</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-info">
+      <h3>
+        <i class="fas fa-info-circle"></i>
+        <span>Important Requirements</span>
+      </h3>
+      <ul>
+        <li>Template must be in landscape orientation for optimal results</li>
+        <li>Student list must have <code>name</code> and <code>dept</code> columns</li>
+        <li>File size limit: 10MB per file</li>
+        <li>Images will be processed to fit A4 paper size</li>
+      </ul>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-magic"></i>
+        <span>Generate Certificates</span>
+      </button>
+      <a href="#" class="btn btn-outline" id="previewBtn" style="display: none;">
+        <i class="fas fa-eye"></i>
+        <span>Preview Template</span>
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Template preview handling
+const templateInput = document.getElementById('templateInput');
+const previewBtn = document.getElementById('previewBtn');
+
+templateInput.addEventListener('change', () => {
+  const file = templateInput.files[0];
+  if (file) {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewBtn.href = e.target.result;
+        previewBtn.style.display = 'inline-flex';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewBtn.style.display = 'none';
+    }
+  } else {
+    previewBtn.style.display = 'none';
+  }
+});
+
+// Preview modal handling
+previewBtn.addEventListener('click', e => {
+  e.preventDefault();
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Template Preview</h3>
+        <button class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img src="${previewBtn.href}" alt="Template Preview" style="max-width: 100%;">
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  modal.querySelector('.modal-close').onclick = () => modal.remove();
+  modal.onclick = e => {
+    if (e.target === modal) modal.remove();
+  };
+});
+</script>
+{% endblock %}
