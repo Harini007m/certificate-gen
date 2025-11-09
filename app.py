@@ -171,24 +171,49 @@ def upload():
 
 @app.route('/preview/<batch>')
 def preview(batch):
+    if not batch or batch == 'undefined':
+        flash("Invalid batch ID", "error")
+        return redirect(url_for('index'))
+
     folder = os.path.join(GENERATED_FOLDER, batch)
-    files = [f for f in os.listdir(folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
-    pdf_path = os.path.join(folder, "All_Certificates.pdf")
+    if not os.path.exists(folder):
+        flash("Batch not found", "error")
+        return redirect(url_for('index'))
 
-    items = [{
-        'name': f.rsplit('.', 1)[0],
-        'file_url': url_for('download_generated', batch=batch, filename=f)
-    } for f in files]
+    try:
+        files = [f for f in os.listdir(folder) if f.endswith(('.jpg', '.png', '.jpeg'))]
+        pdf_path = os.path.join(folder, "All_Certificates.pdf")
 
-    pdf_url = url_for('download_generated', batch=batch, filename="All_Certificates.pdf")
+        items = [{
+            'name': f.rsplit('.', 1)[0].replace('_', ' '),  # Replace underscores with spaces
+            'file_url': url_for('download_generated', batch=batch, filename=f)
+        } for f in files]
 
-    return render_template('preview.html', items=items, batch=batch, pdf_url=pdf_url)
+        pdf_url = url_for('download_generated', batch=batch, filename="All_Certificates.pdf")
+        
+        return render_template('preview.html', items=items, batch=batch, pdf_url=pdf_url)
+    except Exception as e:
+        flash(f"Error loading batch: {str(e)}", "error")
+        return redirect(url_for('index'))
 
 
 @app.route('/generated/<batch>/<filename>')
 def download_generated(batch, filename):
+    if not batch or batch == 'undefined' or not filename:
+        return "Invalid request", 400
+
     folder = os.path.join(GENERATED_FOLDER, batch)
-    return send_from_directory(folder, filename, as_attachment=True)
+    if not os.path.exists(folder):
+        return "Batch not found", 404
+
+    file_path = os.path.join(folder, filename)
+    if not os.path.exists(file_path):
+        return "File not found", 404
+
+    try:
+        return send_from_directory(folder, filename, as_attachment=True)
+    except Exception as e:
+        return f"Error downloading file: {str(e)}", 500
 
 
 if __name__ == "__main__":

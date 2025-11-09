@@ -1,10 +1,12 @@
 Flask==2.3.3
-pandas==2.1.1
+Jinja2==3.1.6
+Werkzeug==2.3.7
+pandas==1.5.3
 openpyxl==3.1.2
 python-docx==0.8.11
-mammoth==1.6.0
 python-dotenv==1.0.1
-Werkzeug==2.3.7
-sendgrid==6.11.0
-twilio==8.2.0
-fpdf2
+Pillow==12.0.0
+fpdf2==2.8.5
+# Additional dependencies for image processing and data handling
+numpy==1.24.3
+python-dateutil==2.9.0.post0

@@ -178,11 +178,21 @@ document.addEventListener('DOMContentLoaded', () => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const img = entry.target;
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-        observer.unobserve(img);
+        const loader = img.parentElement.querySelector('.preview-image-loader');
+        
+        // Start loading the actual image
+        const actualImage = new Image();
+        actualImage.onload = () => {
+          img.src = actualImage.src;
+          if (loader) loader.style.display = 'none';
+          observer.unobserve(img);
+        };
+        actualImage.src = img.dataset.src;
       }
     });
+  }, {
+    rootMargin: '50px 0px', // Start loading images 50px before they enter viewport
+    threshold: 0.1
   });
 
   previewImages.forEach(img => imageObserver.observe(img));

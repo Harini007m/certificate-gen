@@ -331,7 +331,48 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--spacing-lg);
-  margin: var(--spacing-lg) 0;
+  margin: var(--spacing-xl) 0;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.preview-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #f8fafc;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.preview-image img[src^="data:"] {
+  opacity: 0;
+}
+
+.preview-image img:not([src^="data:"]) {
+  opacity: 1;
+}
+
+.preview-image-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--primary-1);
+  font-size: 1.5rem;
+  opacity: 0.5;
 }
 
 .preview-card {
