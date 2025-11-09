@@ -48,7 +48,13 @@
     {% for item in items %}
     <div class="preview-card">
       <div class="preview-image">
-        <img src="{{ item.file_url }}" alt="Certificate for {{ item.name }}" loading="lazy">
+        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+             data-src="{{ item.file_url }}" 
+             alt="Certificate for {{ item.name }}" 
+             loading="lazy">
+        <div class="preview-image-loader">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
         <div class="preview-overlay">
           <div class="preview-overlay-actions">
             <a href="{{ item.file_url }}" class="btn btn-outline btn-icon" target="_blank" title="View Full Size">
